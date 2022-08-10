@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+# # Example
+# - To Run
+# - `bash greeting.sh John`
+echo "Hey there, $1"
+echo "My name is $(whoami)"
+echo "Nice to meet you, $1"
+
+# Make it executable
+# - `chmod u+x greeting.sh`
+
+# Run now: `./greeting.sh John`
+
+# `mv greeting.sh greeting`
+# Run: `./greeting John`
