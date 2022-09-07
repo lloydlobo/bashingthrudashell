@@ -4,8 +4,16 @@ echo Running in $SHELL
 
 function fd_arg {
     local file=$(fd "$1")
+    local e="e"
+    local p="p"
     if [[ -n $file ]]; then
-        cat "$file"
+        echo "[E]dit or [P]review?"
+        read a
+        if [[ $a == $e ]]; then
+            $EDITOR "$file"
+        elif [[ $a == $p ]]; then
+            cat "$file"
+        fi
     fi
 }
 fd_arg $1
