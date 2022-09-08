@@ -1,0 +1,181 @@
+#+TITLE: fzap org literate program
+#+author: lloydlobo
+#+DESCRIPTION: Bash scripting using fd to find and edit or preview files with cat
+#+STARTUP: overview
+#+OPTIONS: num:nil ^:{}
+
+# #+property: header-args :tangle fzap.sh
+# #+PROPERTY: header-args :tangle yes :results none
+# #+PROPERTY: header-args :tangle yes sample.sh :results all
+
+* TABLE OF CONTENTS :toc:
+- [[#about][ABOUT]]
+  - [[#literate-programming][Literate Programming]]
+- [[#setup][SETUP]]
+  - [[#greet-the-user--display-shell-info][Greet the user & display shell info]]
+  - [[#setup-fd-arguments-function][Setup `fd` arguments function]]
+- [[#archive][ARCHIVE]]
+  - [[#function--fd--fzf][Function | fd + fzf]]
+  - [[#queries][Queries]]
+
+* ABOUT
+Bash script to find and edit/preview files. It uses fd
+** Literate Programming
+- C-c to execute, run, append the `#+RESULTS` after source block
+- `SPC-m-'` OR C-c (or M-x org-edit-special) Gives a separate editor for that language
+  - No need for "my-paredit-in-code-block"
+
+* SETUP
+** Greet the user & display shell info
+Inform script status & shell Inform
+#+begin_src sh :tangle fzap.sh
+#!/usr/bin/env bash
+
+echo Running in "$SHELL"
+#+end_src
+
+#+RESULTS:
+: Running in /bin/bash
+
+** Setup `fd` arguments function
+#+begin_src sh :tangle fzap.sh
+
+function fd_arg {
+    local file=$(fd "$1")
+    local e="e"
+    local p="p"
+    if [[ -n $file ]]; then
+        echo "[E]dit or [P]review?"
+        # read without -r will mangle backslashes
+        read -r a
+        if [[ $a == "$e" ]]; then
+            $EDITOR "$file"
+        elif [[ $a == "$p" ]]; then
+            cat "$file"
+        fi
+    fi
+}
+# Call the function
+fd_arg $1
+#+end_src
+
+#+RESULTS:
+: [E]dit or [P]review?
+
+*** Steps
+- Declare `file` variable
+- Initialize it with the return of `fd` binary with argument `"$1"`
+**** Initialize conditional logic
+- Use if statements to verify if file's fetched, and then proceed.
+- Query the user to either Edit or Preview the file.
+  1. "e" for Edit
+  2. "p" for Preview
+
+* ARCHIVE
+** Function | fd + fzf
+#+begin_src sh
+#!/usr/bin/env bash
+
+function fd_fzf {
+    echo "fzap file lister"
+    local file=$(
+        fd --type d | \
+        fzf --query="$1" --no-multi --select-1 --exit-0 \
+        --preview "tree -C {} | head -100"
+    )
+    if [[ -n $file ]]; then
+        $EDITOR "$file"
+    fi
+}
+
+fd_fzf
+alias fzap="fd_fzf"
+#+end_src
+
+#+RESULTS:
+: fzap file lister
+
+*** About
+# https://bluz71.github.io/2018/11/26/fuzzy-finding-in-bash-with-fzf.html
+
+# https://mike.place/2017/fzf-fd/
+    ## Set these environment variables
+        # export FZF_DEFAULT_COMMAND="fd . $HOME"
+        # export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+        # export FZF_ALT_C_COMMAND="fd -t d . $HOME"
+
+    ## Done. You can now press
+        # CTRL-T to fuzzily search for a file or directory in your home directory then insert its path at the cursor
+        # ALT-C to fuzzily search for a directory in your home directory then cd into it
+        # CTRL-R to fuzzily search your command line history then run an old command
+
+** Queries
+*** Greet
+
+#+begin_src sh
+#!/usr/bin/env bash
+
+function query_greet {
+    greeting=Hello
+    who=whoami
+    name=$((who))
+    echo $greeting $name
+}
+
+query_greet
+#+end_src
+
+#+RESULTS:
+: Hello 0
+
+*** Sum of 2 user input numbers
+#+begin_src sh
+#!/usr/bin/env bash
+
+function query_sum {
+    echo "Enter a number"
+    read a
+    echo "Enter a number"
+    read b
+    var=$((a+b))
+    echo $var
+}
+
+query_sum
+#+end_src
+
+#+RESULTS:
+| Enter | a | number |
+| Enter | a | number |
+| 0     |   |        |
+
+*** List mount-points tmpfs in name
+#+begin_src sh
+#!/usr/bin/env bash
+
+function list_tmpfs {
+    var=`df -h | grep tmpfs`
+    echo $var
+}
+
+list_tmpfs
+#+end_src
+
+#+RESULTS:
+: devtmpfs 4.0M 0 4.0M 0% /dev tmpfs 7.8G 54M 7.7G 1% /dev/shm tmpfs 3.1G 1.9M 3.1G 1% /run tmpfs 7.8G 20K 7.8G 1% /tmp tmpfs 1.6G 232K 1.6G 1% /run/user/1000
+
+*** Get user input arguments
+- Run: `$ ./script arg1 arg2`
+
+#+begin_src sh
+#!/usr/bin/env bash
+
+function get_arg {
+    for x in $@
+    do
+    echo "Entered arg is $x"
+    done
+}
+
+get_arg $1 $2
+#+end_src
