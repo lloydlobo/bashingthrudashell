@@ -1,0 +1,71 @@
+#+TITLE:Shell script compiler example
+#+AUTHOR: lloydlobo
+#+STARTUP: showeverything
+#+OPTIONS: num:nil ^:{}
+#+PROPERTY: header-args :tangle shc.sh :results true
+-----
+
+* TABLE OF CONTENTS :TOC:
+- [[#source-code][SOURCE CODE]]
+- [[#instructions][Instructions]]
+  - [[#pre-requisite][Pre-requisite]]
+  - [[#steps][Steps]]
+
+* SOURCE CODE
+#+begin_src sh
+#!/bin/bash
+echo Hello, "$1"
+#+end_src
+
+#+RESULTS:
+| Hello |   |
+
+* Instructions
+org-insert-structure-template: C-c C-, | for `example`: `<e-TAB`
+
+** Pre-requisite
+*** Execute the code
+#+begin_example sh
+$ bash shc.sh Alice
+Hello, Alice!
+#+end_example
+*** File type details
+#+begin_example sh
+$ file shc.sh
+shc.sh: Bourne-Again shell script, ASCII text executable
+#+end_example
+*** Why
+- One of the caveats of using such script is that the code is clearly visible, and it might not be as performant as running a compiled program.
+- shc is a Bash script compiler. You can use it to hide the source code (as some would say “encrypt”) of the Bash script and remove dependency to Bash interpreter by compiling your Bash script into an executable binary from the command line.
+** Steps
+*** 1. Install shc (gcc required)
+*** 2. Compile script using shc
+#+begin_example sh
+$ shc -f shc.sh
+#+end_example
+*** 3. Check generated files
+#+begin_example sh
+$ ls -l shc*
+.rw-r--r--@ 1.3k user  8 Sep 17:12 shc.org
+.rw-r--r--@   30 user  8 Sep 17:12 shc.sh
+.rwxrwxr-x@  16k user  8 Sep 17:13 shc.sh.x
+.rw-r--r--@  18k user  8 Sep 17:13 shc.sh.x.c
+#+end_example
+**** About the file extensions
+- .sh is the original script.
+- sh.x is the compiled binary. (Set automatically as executable)
+- .sh.x.c is the C source code generated from the .sh file prior to compiling to .sh.x.
+*** 4. Check file types (optional)
+#+begin_example sh
+$ file shc.sh.x
+shc.sh.x: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, BuildID[sha1]=b49cfd19c92d2bb548e04efeab1f62156d485300, for GNU/Linux 3.2.0, stripped
+#+end_example
+*** 5. Rename executable (optional)
+#+begin_example sh
+$ mv shc.sh.x greet
+#+end_example
+*** 6. Check file execution (optional)
+#+begin_example sh
+$ ./greet Alice
+Hello, Alice
+#+end_example
